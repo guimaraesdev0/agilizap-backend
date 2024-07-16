@@ -14,6 +14,7 @@ const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
     where: {
       ticketId: ticketId,
       fromMe: false,
+      read: true,
     },
     include: [
       {
