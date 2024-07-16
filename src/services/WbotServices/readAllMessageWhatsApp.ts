@@ -7,6 +7,9 @@ import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 
 const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
+
+  console.log("Ler todas as mensagens do ticket " + ticketId)
+
   const messages = await Message.findAll({
     where: {
       ticketId: ticketId,
@@ -23,10 +26,6 @@ const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
     order: [['createdAt', 'DESC']],
     limit: 100
   }) as any;
-
-  if (!messages || messages.length === 0) {
-    throw new AppError("No messages found for this ticket.");
-  }
 
   const ticket = messages[0].ticket;
 
