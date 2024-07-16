@@ -117,7 +117,7 @@ export const readAll = async (
     await ReadAllWhatsAppMessage(ticketId)  
     return res.status(200)
   } catch (error) {
-    throw new Error("Não foi possível ler todas as mensagem do whatsapp " + error);
+    throw new Error("Não foi possível ler todas as mensagem do whatsapp " + JSON.stringify(error));
   }
   return res.status(200)
 }
