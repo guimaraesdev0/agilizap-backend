@@ -77,7 +77,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     name: Yup.string().required(),
     number: Yup.string()
       .required()
-      .matches(/^\d+$/, "Invalid number format. Only numbers is allowed.")
+      .matches(/^\d+$/, "Número inserido com formatado inválido, formato correto: 55990000000")
   });
 
   try {
@@ -86,15 +86,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     throw new AppError(err.message);
   }
 
-  await CheckIsValidContact(newContact.number, companyId);
-  const validNumber = await CheckContactNumber(newContact.number, companyId);
-  const number = validNumber.jid.replace(/\D/g, "");
-  newContact.number = number;
-
-  /**
-   * Código desabilitado por demora no retorno
-   */
-  // const profilePicUrl = await GetProfilePicUrl(validNumber.jid, companyId);
+  try {
+    await CheckIsValidContact(newContact.number, companyId);
+    const validNumber = await CheckContactNumber(newContact.number, companyId);
+    const number = validNumber.jid.replace(/\D/g, "");
+    newContact.number = number;  
+  } catch (error) {
+    console.log("Erro ao validar o contato, mas o contato foi adicionado")
+  }
 
   const contact = await CreateContactService({
     ...newContact,
