@@ -63,7 +63,6 @@ export const getMessageOptions = async (
     if (typeMessage === "video") {
       options = {
         video: fs.readFileSync(pathMedia),
-        caption: body ? body : '',
         fileName: fileName
         // gifPlayback: true
       };
@@ -74,35 +73,30 @@ export const getMessageOptions = async (
         options = {
           audio: fs.readFileSync(convert),
           mimetype: typeAudio ? "audio/mp4" : mimeType,
-          caption: body ? body : null,
           ptt: true
         };
       } else {
         options = {
           audio: fs.readFileSync(convert),
           mimetype: typeAudio ? "audio/mp4" : mimeType,
-          caption: body ? body : null,
           ptt: true
         };
       }
     } else if (typeMessage === "document") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: body ? body : null,
         fileName: fileName,
         mimetype: mimeType
       };
     } else if (typeMessage === "application") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: body ? body : null,
         fileName: fileName,
         mimetype: mimeType
       };
     } else {
       options = {
         image: fs.readFileSync(pathMedia),
-        caption: body ? body : null
       };
     }
 
@@ -130,7 +124,6 @@ const SendWhatsAppMedia = async ({
     if (typeMessage === "video") {
       options = {
         video: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
         fileName: media.originalname
         // gifPlayback: true
       };
@@ -153,21 +146,18 @@ const SendWhatsAppMedia = async ({
     } else if (typeMessage === "document" || typeMessage === "text") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
         fileName: media.originalname,
         mimetype: media.mimetype
       };
     } else if (typeMessage === "application") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
         fileName: media.originalname,
         mimetype: media.mimetype
       };
     } else {
       options = {
-        image: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
+        image: fs.readFileSync(pathMedia)
       };
     }
 
