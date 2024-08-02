@@ -27,6 +27,8 @@ import Tag from "./Tag";
 import TicketTag from "./TicketTag";
 import QueueIntegrations from "./QueueIntegrations";
 import Prompt from "./Prompt";
+import UsersInTickets from "./UsersInTicket";
+
 
 @Table
 class Ticket extends Model<Ticket> {
@@ -149,6 +151,7 @@ class Ticket extends Model<Ticket> {
   @Default(0)
   @Column
   amountUsedBotQueues: number;
+  
 }
 
 export default Ticket;

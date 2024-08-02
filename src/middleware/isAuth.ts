@@ -17,21 +17,31 @@ const isAuth = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    throw new AppError("ERR_SESSION_EXPIRED", 401);
+    const error = new AppError("ERR_SESSION_EXPIRED", 401);
+    logger.warn({ message: error.message, statusCode: error.statusCode });
+    throw error;
   }
 
   const [, token] = authHeader.split(" ");
 
-  try {
-    const decoded = verify(token, authConfig.secret);
-    const { id, profile, companyId } = decoded as TokenPayload;
+  try { 
+    // Log the token for debugging purposes
+    logger.info({ message: "Attempting to verify token " + token });
+
+    const decoded = verify(token, authConfig.secret) as TokenPayload;
+    const { id, profile, companyId } = decoded;
     req.user = {
       id,
       profile,
       companyId
     };
+
+    logger.info({ message: "Token verified successfully", user: req.user });
   } catch (err) {
-    throw new AppError("Invalid token. We'll try to assign a new one on next request", 403 );
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const error = new AppError(`Invalid token: ${errorMessage}`, 403);
+    logger.warn({ message: error.message, statusCode: error.statusCode });
+    throw error;
   }
 
   return next();

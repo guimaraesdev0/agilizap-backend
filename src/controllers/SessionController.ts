@@ -18,6 +18,13 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   SendRefreshToken(res, refreshToken);
 
+  // Set the token in a cookie
+  res.cookie('jrt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // true em produção, false em desenvolvimento
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' // 'strict' ou 'lax' dependendo do ambiente
+  });
+
   const io = getIO();
   io.to(`user-${serializedUser.id}`).emit(`company-${serializedUser.companyId}-auth`, {
     action: "update",
@@ -34,46 +41,46 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 };
 
-export const update = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const token: string = req.cookies.jrt;
+export const update = async (req: Request, res: Response): Promise<Response> => {
+  const token: string = req.cookies.jrt
+
+  console.log("Lista de cookies: " + JSON.stringify(req.cookies));
 
   if (!token) {
     throw new AppError("ERR_SESSION_EXPIRED", 401);
   }
 
-  const { user, newToken, refreshToken } = await RefreshTokenService(
-    res,
-    token
-  );
+  const { user, newToken, refreshToken } = await RefreshTokenService(res, token);
 
   SendRefreshToken(res, refreshToken);
+
+  // Update the token in the cookie
+  res.cookie('jrt', newToken, {
+    httpOnly: true,
+  });
 
   return res.json({ token: newToken, user });
 };
 
 export const me = async (req: Request, res: Response): Promise<Response> => {
   const token: string = req.cookies.jrt;
-  const user = await FindUserFromToken(token);
-  const { id, profile, super: superAdmin } = user;
 
   if (!token) {
     throw new AppError("ERR_SESSION_EXPIRED", 401);
   }
 
+  const user = await FindUserFromToken(token);
+  const { id, profile, super: superAdmin } = user;
+
   return res.json({ id, profile, super: superAdmin });
 };
 
-export const remove = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const remove = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.user;
   const user = await User.findByPk(id);
   await user.update({ online: false });
 
+  // Clear the cookie
   res.clearCookie("jrt");
 
   return res.send();

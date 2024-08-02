@@ -237,7 +237,6 @@ export const sendMessageImage = async (
       {
         image: url ? { url } : fs.readFileSync(`public/temp/${caption}-${makeid(10)}`),
         fileName: caption,
-        caption: caption,
         mimetype: 'image/jpeg'
       }
     );
@@ -266,7 +265,6 @@ export const sendMessageLink = async (
       `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
       document: url ? { url } : fs.readFileSync(`public/temp/${caption}-${makeid(10)}`),
       fileName: caption,
-      caption: caption,
       mimetype: 'application/pdf'
     }
     );

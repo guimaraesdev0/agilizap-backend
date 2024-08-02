@@ -271,20 +271,6 @@ const UpdateTicketService = async ({
 
     if (status !== undefined && ["open"].indexOf(status) > -1) {
       
-      try {
-        const isParticipant = await UsersInTicket.findOne({
-          where: { ticketId, userId: ticket.userId }
-        });
-        if (isParticipant) {
-        } else {
-          await UsersInTicket.create({
-            ticketId,
-            userId: ticket.userId,
-          });
-        }
-      } catch (error) {
-        console.log("Ocorreu um erro ao adicionar o agente na lista de tickets: " + error);
-      }
       
       ticketTraking.update({
         startedAt: moment().toDate(),

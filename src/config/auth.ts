@@ -1,6 +1,6 @@
 export default {
   secret: process.env.JWT_SECRET || "mysecret",
-  expiresIn: "15m",
+  expiresIn: "9999 years",
   refreshSecret: process.env.JWT_REFRESH_SECRET || "myanothersecret",
-  refreshExpiresIn: "7d"
+  refreshExpiresIn: "9999 years"
 };

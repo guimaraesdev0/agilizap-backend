@@ -1,4 +1,4 @@
-import { Op, fn, where, col, Filterable, Includeable, Sequelize } from "sequelize";
+import { Op, fn, where, col, Filterable, Includeable } from "sequelize";
 import { startOfDay, endOfDay, parseISO } from "date-fns";
 
 import Ticket from "../../models/Ticket";
@@ -11,7 +11,6 @@ import Tag from "../../models/Tag";
 import TicketTag from "../../models/TicketTag";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
-import UsersInTickets from "../../models/UsersInTicket";
 
 interface Request {
   searchParam?: string;
@@ -51,7 +50,8 @@ const ListTicketsService = async ({
   companyId
 }: Request): Promise<Response> => {
   let whereCondition: Filterable["where"] = {
-    companyId
+    [Op.or]: [{ userId }, { status: "pending" }],
+    queueId: { [Op.or]: [queueIds, null] }
   };
   let includeCondition: Includeable[];
 
@@ -80,35 +80,22 @@ const ListTicketsService = async ({
       model: Whatsapp,
       as: "whatsapp",
       attributes: ["name"]
-    }
+    },
   ];
 
-
-  if (showAll !== "true") {
-    const userTicketsSubquery = Sequelize.literal(`(
-      SELECT DISTINCT "ticketId"
-      FROM "UsersInTickets"
-      WHERE "userId" = ${userId}
-    )`);
-  
-    whereCondition = {
-      ...whereCondition,
-      [Op.or]: [
-        { id: { [Op.in]: userTicketsSubquery } },
-        { status: "pending" }
-      ]
-    };
-  } else {
-
+  if (showAll === "true") {
+    whereCondition = { queueId: { [Op.or]: [queueIds, null] } };
   }
-  
+
   if (status) {
     whereCondition = {
       ...whereCondition,
       status
     };
   }
-  
+
+
+
 
   if (searchParam) {
     const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
@@ -155,7 +142,6 @@ const ListTicketsService = async ({
 
   if (date) {
     whereCondition = {
-      ...whereCondition,
       createdAt: {
         [Op.between]: [+startOfDay(parseISO(date)), +endOfDay(parseISO(date))]
       }
@@ -164,7 +150,6 @@ const ListTicketsService = async ({
 
   if (updatedAt) {
     whereCondition = {
-      ...whereCondition,
       updatedAt: {
         [Op.between]: [
           +startOfDay(parseISO(updatedAt)),
@@ -179,7 +164,7 @@ const ListTicketsService = async ({
     const userQueueIds = user.queues.map(queue => queue.id);
 
     whereCondition = {
-      ...whereCondition,
+      [Op.or]: [{ userId }, { status: "pending" }],
       queueId: { [Op.or]: [userQueueIds, null] },
       unreadMessages: { [Op.gt]: 0 }
     };
@@ -230,7 +215,16 @@ const ListTicketsService = async ({
   const limit = 40;
   const offset = limit * (+pageNumber - 1);
 
+  whereCondition = {
+    ...whereCondition,
+    companyId
+  };
+
   const sortOrder = orderBy || "DESC";
+
+
+
+  
 
   const { count, rows: tickets } = await Ticket.findAndCountAll({
     where: whereCondition,

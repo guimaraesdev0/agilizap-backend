@@ -14,7 +14,7 @@ const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
     where: {
       ticketId: ticketId,
       fromMe: false,
-      read: true,
+      read: true
     },
     include: [
       {
@@ -27,11 +27,9 @@ const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
     limit: 100
   }) as any;
 
-  console.log("Resultado da pesquisa: " + JSON.stringify(messages))
+  console.log(JSON.stringify(messages))
 
   const ticket = messages[0].ticket;
-
-  console.log("TICKET : " + JSON.stringify(ticket))
 
   try {
     const wbot = await GetTicketWbot(ticket);
@@ -42,7 +40,7 @@ const ReadAllWhatsAppMessage = async (ticketId: string): Promise<Message[]> => {
     return;
 
   } catch (error) {
-    console.log("Ocorreu um erro: " + JSON.stringify(error))
+    console.log("Ocorreu um erro: " + error)
   }
 
 
