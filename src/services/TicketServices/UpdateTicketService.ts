@@ -270,7 +270,7 @@ const UpdateTicketService = async ({
     }
 
     if (status !== undefined && ["open"].indexOf(status) > -1) {
-      
+      console.log("TICKET ACEITO")
       
       ticketTraking.update({
         startedAt: moment().toDate(),
