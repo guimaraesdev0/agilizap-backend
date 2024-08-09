@@ -7,6 +7,7 @@ interface Request {
   body: string;
   sendAt: string;
   contactId: number | string;
+  ticketId: number | string;
   companyId: number | string;
   userId?: number | string;
 }
@@ -15,6 +16,7 @@ const CreateService = async ({
   body,
   sendAt,
   contactId,
+  ticketId,
   companyId,
   userId
 }: Request): Promise<Schedule> => {
@@ -34,6 +36,7 @@ const CreateService = async ({
       body,
       sendAt,
       contactId,
+      ticketId,
       companyId,
       userId,
       status: 'PENDENTE'

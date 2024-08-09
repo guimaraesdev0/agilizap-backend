@@ -15,6 +15,7 @@ interface SerializedUser {
   email: string;
   profile: string;
   queues: Queue[];
+  whatsappId: number;
   companyId: number;
 }
 
@@ -49,7 +50,7 @@ const AuthUserService = async ({
   const token = createAccessToken(user);
   const refreshToken = createRefreshToken(user);
 
-  const serializedUser = await SerializeUser(user);
+const serializedUser = await SerializeUser(user) as SerializedUser;
 
   return {
     serializedUser,

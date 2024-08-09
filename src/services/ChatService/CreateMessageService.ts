@@ -21,6 +21,7 @@ export default async function CreateMessageService({
     message
   });
 
+
   await newMessage.reload({
     include: [
       { model: User, as: "sender", attributes: ["id", "name"] },

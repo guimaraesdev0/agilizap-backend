@@ -69,7 +69,7 @@ const SendWhatsAppMessage = async ({
   }
 
   try {
-    console.log('body:::::::::::::::::::::::::::', body);
+    console.log('body:', body);
     map_msg.set(number, body);
     
     const sentMessage = await wbot.sendMessage(number, {

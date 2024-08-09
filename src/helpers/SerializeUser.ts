@@ -9,6 +9,7 @@ interface SerializedUser {
   email: string;
   profile: string;
   companyId: number;
+  whatsappId: number;
   company: Company | null;
   super: boolean;
   queues: Queue[];
@@ -22,6 +23,7 @@ export const SerializeUser = async (user: User): Promise<SerializedUser> => {
     email: user.email,
     profile: user.profile,
     companyId: user.companyId,
+    whatsappId: user.whatsappId,
     company: user.company,
     super: user.super,
     queues: user.queues,

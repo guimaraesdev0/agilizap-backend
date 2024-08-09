@@ -40,6 +40,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     body,
     sendAt,
     contactId,
+    ticketId,
     userId
   } = req.body;
   const { companyId } = req.user;
@@ -48,6 +49,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     body,
     sendAt,
     contactId,
+    ticketId,
     companyId,
     userId
   });

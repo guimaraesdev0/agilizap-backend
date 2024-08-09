@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/node";
 import BullQueue from "bull";
 import { addSeconds, differenceInSeconds } from "date-fns";
 import { isArray, isEmpty, isNil } from "lodash";
-import moment from "moment";
+import moment from 'moment-timezone';
 import path from "path";
 import { Op, QueryTypes } from "sequelize";
 import sequelize from "./database";
@@ -26,6 +26,11 @@ import ShowFileService from "./services/FileServices/ShowService";
 import { getMessageOptions } from "./services/WbotServices/SendWhatsAppMedia";
 import { ClosedAllOpenTickets } from "./services/WbotServices/wbotClosedTickets";
 import { logger } from "./utils/logger";
+import GetTicketWbot from "./helpers/GetTicketWbot";
+import Ticket from "./models/Ticket";
+import SendWhatsAppMessage from "./services/WbotServices/SendWhatsAppMessage";
+import CreateMessageService from "./services/MessageServices/CreateMessageService";
+
 
 
 const nodemailer = require('nodemailer');
@@ -34,6 +39,8 @@ const CronJob = require('cron').CronJob;
 const connection = process.env.REDIS_URI || "";
 const limiterMax = process.env.REDIS_OPT_LIMITER_MAX || 1;
 const limiterDuration = process.env.REDIS_OPT_LIMITER_DURATION || 3000;
+const TicketModel = Ticket;
+
 
 interface ProcessCampaignData {
   id: number;
@@ -222,8 +229,8 @@ async function handleVerifySchedules(job) {
         status: "PENDENTE",
         sentAt: null,
         sendAt: {
-          [Op.gte]: moment().format("YYYY-MM-DD HH:mm:ss"),
-          [Op.lte]: moment().add("30", "seconds").format("YYYY-MM-DD HH:mm:ss")
+          [Op.gte]: moment().tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm"),
+          [Op.lte]: moment().add("30", "seconds").tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm:ss")
         }
       },
       include: [{ model: Contact, as: "contact" }]
@@ -249,6 +256,7 @@ async function handleVerifySchedules(job) {
 }
 
 async function handleSendScheduledMessage(job) {
+
   const {
     data: { schedule }
   } = job;
@@ -260,8 +268,16 @@ async function handleSendScheduledMessage(job) {
     Sentry.captureException(e);
     logger.info(`Erro ao tentar consultar agendamento: ${schedule.id}`);
   }
-
+ 
   try {
+    const getTicket:any = await TicketModel.findOne({
+      where:{
+        id: schedule.ticketId
+      }
+    })
+
+    const ticket:Ticket = getTicket.dataValues;
+
     const whatsapp = await GetDefaultWhatsApp(schedule.companyId);
 
     let filePath = null;
@@ -273,10 +289,48 @@ async function handleSendScheduledMessage(job) {
       number: schedule.contact.number,
       body: formatBody(schedule.body, schedule.contact),
       mediaPath: filePath
-    });
+    }).then(async (success:any) => {
+      console.log(success)
+
+      console.log(success.key.id)
+      interface MessageData {
+        id: string;
+        ticketId: number;
+        body: string;
+        contactId?: number;
+        fromMe?: boolean;
+        read?: boolean;
+        mediaType?: string;
+        mediaUrl?: string;
+        ack?: number;
+        queueId?: number;
+      }
+  
+      const messageData:MessageData = {
+        id: success.key.id,
+        ticketId: schedule.ticketId,
+        read: false,
+        body: schedule.body,
+        contactId: schedule.contactId,
+        fromMe: success.key.fromMe,
+        mediaUrl: filePath
+      }
+  
+      const companyId = schedule.companyId
+      try {
+        await CreateMessageService({messageData, companyId})
+      } catch (error) {
+        console.log("ERRO AO CRIAR A MENSAGEM: " + error)
+      }
+
+    }) 
+
+
+
+
 
     await scheduleRecord?.update({
-      sentAt: moment().format("YYYY-MM-DD HH:mm"),
+      sentAt: moment().tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm"),       
       status: "ENVIADA"
     });
 
@@ -287,7 +341,7 @@ async function handleSendScheduledMessage(job) {
     await scheduleRecord?.update({
       status: "ERRO"
     });
-    logger.error("SendScheduledMessage -> SendMessage: error", e.message);
+    logger.error("SendScheduledMessage -> SendMessage: error" + e.message);
     throw e;
   }
 }

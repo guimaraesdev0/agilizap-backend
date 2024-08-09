@@ -31,9 +31,11 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     user: {
       id: serializedUser.id,
       email: serializedUser.email,
-      companyId: serializedUser.companyId
+      companyId: serializedUser.companyId,
+      whatsappId: serializedUser.whatsappId
     }
   });
+
 
   return res.status(200).json({
     token,
@@ -70,9 +72,9 @@ export const me = async (req: Request, res: Response): Promise<Response> => {
   }
 
   const user = await FindUserFromToken(token);
-  const { id, profile, super: superAdmin } = user;
+  const { id, profile, super: superAdmin, whatsappId } = user;
 
-  return res.json({ id, profile, super: superAdmin });
+  return res.json({ id, profile, super: superAdmin, whatsappId });
 };
 
 export const remove = async (req: Request, res: Response): Promise<Response> => {

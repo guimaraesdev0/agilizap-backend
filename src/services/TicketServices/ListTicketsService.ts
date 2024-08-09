@@ -69,7 +69,7 @@ const ListTicketsService = async ({
     {
       model: User,
       as: "user",
-      attributes: ["id", "name"]
+      attributes: ["id", "name", "whatsappId"]
     },
     {
       model: Tag,
@@ -83,14 +83,18 @@ const ListTicketsService = async ({
     }
   ];
 
+  const user = await ShowUserService(userId);
 
-  if (showAll !== "true") {
+
+  if (showAll === "true") {
+
+  } else {
     const userTicketsSubquery = Sequelize.literal(`(
       SELECT DISTINCT "ticketId"
       FROM "UsersInTickets"
       WHERE "userId" = ${userId}
     )`);
-  
+
     whereCondition = {
       ...whereCondition,
       [Op.or]: [
@@ -98,17 +102,20 @@ const ListTicketsService = async ({
         { status: "pending" }
       ]
     };
-  } else {
 
+    whereCondition = {
+      ...whereCondition,
+      "whatsappId": user.whatsappId
+    };
   }
-  
+
   if (status) {
     whereCondition = {
       ...whereCondition,
       status
     };
   }
-  
+
 
   if (searchParam) {
     const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
