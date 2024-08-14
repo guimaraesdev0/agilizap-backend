@@ -270,14 +270,6 @@ async function handleSendScheduledMessage(job) {
   }
  
   try {
-    const getTicket:any = await TicketModel.findOne({
-      where:{
-        id: schedule.ticketId
-      }
-    })
-
-    const ticket:Ticket = getTicket.dataValues;
-
     const whatsapp = await GetDefaultWhatsApp(schedule.companyId);
 
     let filePath = null;
@@ -322,12 +314,7 @@ async function handleSendScheduledMessage(job) {
       } catch (error) {
         console.log("ERRO AO CRIAR A MENSAGEM: " + error)
       }
-
     }) 
-
-
-
-
 
     await scheduleRecord?.update({
       sentAt: moment().tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm"),       
