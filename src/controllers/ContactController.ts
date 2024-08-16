@@ -21,6 +21,7 @@ import ContactCustomField from "../models/ContactCustomField";
 type IndexQuery = {
   searchParam: string;
   pageNumber: string;
+  whatsappId: any;
 };
 
 type IndexGetContactQuery = {
@@ -40,13 +41,14 @@ interface ContactData {
 }
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
-  const { searchParam, pageNumber } = req.query as IndexQuery;
+  const { searchParam, pageNumber, whatsappId } = req.query as IndexQuery;
   const { companyId } = req.user;
 
   const { contacts, count, hasMore } = await ListContactsService({
     searchParam,
     pageNumber,
-    companyId
+    companyId,
+    whatsappId
   });
 
   return res.json({ contacts, count, hasMore });
@@ -187,6 +189,7 @@ export const list = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
 
   const contacts = await SimpleListService({ name, companyId });
+
 
   return res.json(contacts);
 };

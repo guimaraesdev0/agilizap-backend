@@ -5,6 +5,7 @@ interface Request {
   searchParam?: string;
   pageNumber?: string;
   companyId: number;
+  whatsappId: number;
 }
 
 interface Response {
@@ -16,23 +17,28 @@ interface Response {
 const ListContactsService = async ({
   searchParam = "",
   pageNumber = "1",
-  companyId
+  companyId,
+  whatsappId
 }: Request): Promise<Response> => {
   const whereCondition = {
-    [Op.or]: [
+    [Op.and]: [
       {
-        name: Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("name")),
-          "LIKE",
-          `%${searchParam.toLowerCase().trim()}%`
-        )
+        [Op.or]: [
+          {
+            name: Sequelize.where(
+              Sequelize.fn("LOWER", Sequelize.col("name")),
+              "LIKE",
+              `%${searchParam.toLowerCase().trim()}%`
+            )
+          },
+          { number: { [Op.like]: `%${searchParam.toLowerCase().trim()}%` } }
+        ]
       },
-      { number: { [Op.like]: `%${searchParam.toLowerCase().trim()}%` } }
-    ],
-    companyId: {
-      [Op.eq]: companyId
-    }
+      { companyId: { [Op.eq]: companyId } },
+      { whatsappId: { [Op.eq]: whatsappId } }
+    ]
   };
+
   const limit = 30;
   const offset = limit * (+pageNumber - 1);
 
