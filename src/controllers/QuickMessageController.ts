@@ -27,6 +27,7 @@ type StoreData = {
   shortcode: string;
   message: string;
   userId: number | number;
+  showAll: boolean;
 };
 
 type FindParams = {
@@ -92,6 +93,7 @@ export const update = async (
 ): Promise<Response> => {
   const data = req.body as StoreData;
   const { companyId } = req.user;
+  console.log(`editar:` + JSON.stringify(data))
 
   const schema = Yup.object().shape({
     shortcode: Yup.string().required(),

@@ -23,28 +23,18 @@ const ListService = async ({
   const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
 
   let whereCondition: Filterable["where"] = {
-    // [Op.or]: [
-    //   {
+    companyId,
+    [Op.or]: [
+      { userId: userId },
+      { showAll: true }
+    ],
     shortcode: Sequelize.where(
       Sequelize.fn("LOWER", Sequelize.col("shortcode")),
       "LIKE",
       `%${sanitizedSearchParam}%`
     )
-    //   },
-    //   {
-    //     message: Sequelize.where(
-    //       Sequelize.fn("LOWER", Sequelize.col("message")),
-    //       "LIKE",
-    //       `%${sanitizedSearchParam}%`
-    //     )
-    //   }
-    // ]
   };
-  whereCondition = {
-  ...whereCondition,
-  companyId,
-  userId: userId
-  }
+
   const limit = 20;
   const offset = limit * (+pageNumber - 1);
 

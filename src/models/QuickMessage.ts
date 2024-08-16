@@ -7,7 +7,8 @@ import {
   PrimaryKey,
   ForeignKey,
   BelongsTo,
-  AutoIncrement
+  AutoIncrement,
+  AllowNull
 } from "sequelize-typescript";
 
 import Company from "./Company";
@@ -46,6 +47,7 @@ class QuickMessage extends Model<QuickMessage> {
   @UpdatedAt
   updatedAt: Date;
 
+  
   @Column
   get mediaPath(): string | null {
     if (this.getDataValue("mediaPath")) {
@@ -58,6 +60,11 @@ class QuickMessage extends Model<QuickMessage> {
   
   @Column
   mediaName: string;
+
+
+  @Column
+  showAll: boolean;
+
 }
 
 export default QuickMessage;
