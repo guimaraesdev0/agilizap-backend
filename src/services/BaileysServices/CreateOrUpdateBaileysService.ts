@@ -8,6 +8,15 @@ interface Request {
   chats?: Chat[];
 }
 
+const isValidJson = (obj: any) => {
+  try {
+    JSON.stringify(obj);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 const createOrUpdateBaileysService = async ({
   whatsappId,
   contacts,
@@ -21,7 +30,7 @@ const createOrUpdateBaileysService = async ({
     const getChats = baileysExists.chats
       ? JSON.parse(JSON.stringify(baileysExists.chats))
       : [];
-    const getContacts = baileysExists.contacts
+      const getContacts = baileysExists.contacts && isValidJson(baileysExists.contacts)
       ? JSON.parse(JSON.stringify(baileysExists.contacts))
       : [];
 
