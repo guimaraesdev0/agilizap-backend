@@ -20,7 +20,7 @@ interface Response {
 const ListService = async ({
   searchParam,
   contactId = "",
-  userId = "",
+  userId,
   pageNumber = "1",
   companyId
 }: Request): Promise<Response> => {
