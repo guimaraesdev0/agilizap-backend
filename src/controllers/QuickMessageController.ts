@@ -169,7 +169,7 @@ export const mediaUpload = async (
 
     return res.send({ mensagem: "Arquivo Anexado" });
     } catch (err: any) {
-      throw new AppError(err.message);
+      throw new AppError('Erro ao anexar arquivo');
   }
 };
 

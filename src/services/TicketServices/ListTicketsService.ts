@@ -99,6 +99,7 @@ const ListTicketsService = async ({
       ...whereCondition,
       [Op.or]: [
         { id: { [Op.in]: userTicketsSubquery } },
+        { userId: userId },
         { status: "pending" }
       ]
     };

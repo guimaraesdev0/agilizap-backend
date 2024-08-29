@@ -184,7 +184,7 @@ export const showFromUUID = async (
 
 
   const ticket: Ticket = await ShowTicketUUIDService(uuid);
-
+/* 
   try {
     const isParticipant = await UsersInTicket.findOne({
       where: { ticketId: ticket.id, userId: id }
@@ -198,7 +198,7 @@ export const showFromUUID = async (
     }
   } catch (error) {
     console.log("Ocorreu um erro ao adicionar o agente na lista de tickets: " + error);
-  } 
+  }  */
 
   return res.status(200).json(ticket);
 };
@@ -209,7 +209,7 @@ export const update = async (
 ): Promise<Response> => {
   const { ticketId } = req.params;
   const ticketData: TicketData = req.body;
-  const { companyId } = req.user;
+  const { companyId, id } = req.user;
 
   const { ticket } = await UpdateTicketService({
     ticketData,

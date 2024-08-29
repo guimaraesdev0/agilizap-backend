@@ -48,7 +48,7 @@ interface Response {
 const UpdateTicketService = async ({
   ticketData,
   ticketId,
-  companyId
+  companyId,
 }: Request): Promise<Response> => {
 
   try {
@@ -270,6 +270,22 @@ const UpdateTicketService = async ({
     }
 
     if (status !== undefined && ["open"].indexOf(status) > -1) {
+
+      try {
+        const isParticipant = await UsersInTicket.findOne({
+          where: { ticketId: ticket.id, userId }
+        });
+        if (isParticipant) {
+        } else {
+          await UsersInTicket.create({
+            ticketId: ticket.id,
+            userId: userId,
+          });
+        }
+      } catch (error) {
+        console.log("Ocorreu um erro ao adicionar o agente na lista de tickets: " + error);
+      }
+
       console.log("TICKET ACEITO")
       
       ticketTraking.update({

@@ -50,28 +50,50 @@ const SendWhatsAppMessage = async ({
         }
       });
 
-      if (chatMessages) {
-        const msgFound = JSON.parse(chatMessages.dataJson);
+      const msgFound = JSON.parse(chatMessages.dataJson);
+      
+      console.log(`MENSAGEM CHAT MESSAGES: ${JSON.stringify(chatMessages)}`)
 
-        options = {
-          quoted: {
-            key: msgFound.key,
-            message: {
-              extendedTextMessage: msgFound.message.extendedTextMessage
+      if (chatMessages.mediaType == "image") {
+        console.log("RESPONDENDO IMAGEM")
+        if (chatMessages) {
+          options = {
+            quoted: {
+              key: msgFound.key,
+              message:{
+                imageMessage: msgFound.message.imageMessage
+              },
+              readMessages:msgFound.key
             },
             readMessages:msgFound.key
-          },
-          readMessages:msgFound.key
-
-        };
+          }
+        }
       }
-    
+
+      if (chatMessages.mediaType == "extendedTextMessage") {
+        console.log("RESPONDENDO mensagem")
+
+        if (chatMessages) {
+  
+          options = {
+            quoted: {
+              key: msgFound.key,
+              message: {
+                extendedTextMessage: msgFound.message.extendedTextMessage
+              },
+              readMessages:msgFound.key
+            },
+            readMessages:msgFound.key
+  
+          };
+        }        
+      }
   }
 
   try {
     console.log('body:', body);
     map_msg.set(number, body);
-    
+    console.log(`OPTIONS: ` + JSON.stringify(options))
     const sentMessage = await wbot.sendMessage(number, {
         text: formatBody(body, ticket.contact)
       },
@@ -79,12 +101,14 @@ const SendWhatsAppMessage = async ({
         ...options
       }
     );
-  
-    await ticket.update({ lastMessage: formatBody(body, ticket.contact) });
-  
-    const lastMessageKey = JSON.parse(lastMessage.dataValues.dataJson);
-  
-    await wbot.readMessages([lastMessageKey.key]);
+
+    try {
+      await ticket.update({ lastMessage: formatBody(body, ticket.contact) });
+      const lastMessageKey = JSON.parse(lastMessage.dataValues.dataJson);
+      await wbot.readMessages([lastMessageKey.key]);      
+    } catch (error) {
+      throw new AppError("ERR_SENDING_WAPP_MSG");
+    }
   
     return sentMessage;
   } catch (err) {
