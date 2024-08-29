@@ -88,6 +88,25 @@ const SendWhatsAppMessage = async ({
           };
         }        
       }
+
+      if (chatMessages.mediaType == "conversation") {
+        console.log("RESPONDENDO mensagem")
+
+        if (chatMessages) {
+  
+          options = {
+            quoted: {
+              key: msgFound.key,
+              message: {
+                conversation: msgFound.message.conversation
+              },
+              readMessages:msgFound.key
+            },
+            readMessages:msgFound.key
+  
+          };
+        }        
+      }
   }
 
   try {

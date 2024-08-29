@@ -48,7 +48,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     searchParam,
     pageNumber,
     companyId,
-    whatsappId
+    whatsappId 
   });
 
   return res.json({ contacts, count, hasMore });

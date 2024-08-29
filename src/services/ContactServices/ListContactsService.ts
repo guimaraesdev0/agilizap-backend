@@ -6,7 +6,7 @@ interface Request {
   pageNumber?: string;
   companyId: number;
   whatsappId: number;
-}
+ }
 
 interface Response {
   contacts: Contact[];
