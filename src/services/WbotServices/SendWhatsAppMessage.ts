@@ -15,17 +15,17 @@ interface Request {
   body: string;
   ticket: Ticket;
   quotedMsg?: Message;
+  whatsappId?: any;
 }
-
 
 const SendWhatsAppMessage = async ({
   body,
   ticket,
-  quotedMsg
+  quotedMsg,
 }: Request): Promise<WAMessage> => {
+
   let options = {};
   const wbot = await GetTicketWbot(ticket);
-
 
   const number = `${ticket.contact.number}@${
     ticket.isGroup ? "g.us" : "s.whatsapp.net"
@@ -127,7 +127,7 @@ const SendWhatsAppMessage = async ({
       const lastMessageKey = JSON.parse(lastMessage.dataValues.dataJson);
       await wbot.readMessages([lastMessageKey.key]);      
     } catch (error) {
-      throw new AppError("ERR_SENDING_WAPP_MSG");
+
     }
   
     return sentMessage;

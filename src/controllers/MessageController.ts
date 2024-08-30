@@ -73,16 +73,20 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const { body, quotedMsg }: MessageData = req.body;
   const medias = req.files as Express.Multer.File[];
   const { companyId, id:userId, profile } = req.user;
+
   
   const ticket = await ShowTicketService(ticketId, companyId);
+  const user = await User.findByPk(userId);
+  const whatsappId = user.whatsappId;
+  console.log("whatsappId do usuario: " + whatsappId + " Whatsapp do ticket: " + ticket.whatsappId)
 
-  if (profile !== "admin") {
-    const user = await User.findByPk(userId);
-    const whatsappId = user.whatsappId;
-    if (whatsappId) {
-      ticket.whatsappId = whatsappId;
-    }   
+  if (user.profile == "admin") {
+  }else{
+    ticket.whatsappId = whatsappId;
   }
+  console.log("Whatsapp do ticket novo: " + ticket.whatsappId)
+
+
 
   SetTicketMessagesAsRead(ticket);
 
