@@ -35,6 +35,7 @@ type MessageData = {
   quotedMsg?: Message;
   number?: string;
   closeTicket?: true;
+  whatsappId?: any;
 };
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
@@ -71,9 +72,17 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const { ticketId } = req.params;
   const { body, quotedMsg }: MessageData = req.body;
   const medias = req.files as Express.Multer.File[];
-  const { companyId } = req.user;
-
+  const { companyId, id:userId, profile } = req.user;
+  
   const ticket = await ShowTicketService(ticketId, companyId);
+
+  if (profile !== "admin") {
+    const user = await User.findByPk(userId);
+    const whatsappId = user.whatsappId;
+    if (whatsappId) {
+      ticket.whatsappId = whatsappId;
+    }   
+  }
 
   SetTicketMessagesAsRead(ticket);
 
@@ -85,9 +94,9 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       })
     );
   } else {
-    const send = await SendWhatsAppMessage({ body, ticket, quotedMsg });
+    const send = await SendWhatsAppMessage({ body, ticket, quotedMsg});
   }
-
+ 
   return res.send();
 };
 
