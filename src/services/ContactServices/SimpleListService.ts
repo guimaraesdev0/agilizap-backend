@@ -5,9 +5,10 @@ import { FindOptions, Op } from "sequelize";
 export interface SearchContactParams {
   companyId: string | number;
   name?: string;
+  whatsappId: number;
 }
 
-const SimpleListService = async ({ name, companyId }: SearchContactParams): Promise<Contact[]> => {
+const SimpleListService = async ({ name, companyId, whatsappId}: SearchContactParams): Promise<Contact[]> => {
   let options: FindOptions = {
     order: [
       ['name', 'ASC']
@@ -20,11 +21,12 @@ const SimpleListService = async ({ name, companyId }: SearchContactParams): Prom
         [Op.like]: `%${name}%`
       }
     }
-  }
+  } 
 
   options.where = {
     ...options.where,
-    companyId
+    companyId,
+    whatsappId
   }
 
   const contacts = await Contact.findAll(options);
