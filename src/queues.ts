@@ -26,7 +26,7 @@ import ShowFileService from "./services/FileServices/ShowService";
 import { getMessageOptions } from "./services/WbotServices/SendWhatsAppMedia";
 import { ClosedAllOpenTickets } from "./services/WbotServices/wbotClosedTickets";
 import { logger } from "./utils/logger";
-import GetTicketWbot from "./helpers/GetTicketWbot";
+
 import Ticket from "./models/Ticket";
 import SendWhatsAppMessage from "./services/WbotServices/SendWhatsAppMessage";
 import CreateMessageService from "./services/MessageServices/CreateMessageService";
@@ -270,14 +270,19 @@ async function handleSendScheduledMessage(job) {
   }
  
   try {
-    const whatsapp = await GetDefaultWhatsApp(schedule.companyId);
+    const getUserWhatsapp = await User.findByPk(schedule.userId);
+    const whatsappConnection = await Whatsapp.findByPk(getUserWhatsapp.whatsappId);    
+    if (whatsappConnection.id == null) {
+      logger.error("SendScheduledMessage -> O usuario nao tem nenhum whatsappSetado");
+      return;
+    }
 
     let filePath = null;
     if (schedule.mediaPath) {
       filePath = path.resolve("public", schedule.mediaPath);
     }
 
-    await SendMessage(whatsapp, {
+    await SendMessage(whatsappConnection, {
       number: schedule.contact.number,
       body: formatBody(schedule.body, schedule.contact),
       mediaPath: filePath
