@@ -83,11 +83,13 @@ const UpdateTicketService = async ({
       whatsappId: ticket.whatsappId
     });
 
-    if (isNil(whatsappId)) {
-      whatsappId = ticket.whatsappId.toString();
+    if (ticket.whatsappId != null) {
+      if (isNil(whatsappId)) {
+        whatsappId = ticket.whatsappId.toString();
+      }      
+      await SetTicketMessagesAsRead(ticket);
     }
 
-    await SetTicketMessagesAsRead(ticket);
 
     const oldStatus = ticket.status;
     const oldUserId = ticket.user?.id;
@@ -113,72 +115,74 @@ const UpdateTicketService = async ({
 
       //     return { ticket: otherTicket, oldStatus, oldUserId }
       // }
-      await CheckContactOpenTickets(ticket.contact.id, whatsappId);
       chatbot = null;
       queueOptionId = null;
     }
 
     if (status !== undefined && ["closed"].indexOf(status) > -1) {
-      const { complationMessage, ratingMessage } = await ShowWhatsAppService(
-        ticket.whatsappId,
-        companyId
-      );
-
-      if (setting?.value === "enabled") {
-        if (ticketTraking.ratingAt == null) {
-          const ratingTxt = ratingMessage || "";
-          let bodyRatingMessage = `\u200e${ratingTxt}\n\n`;
-          bodyRatingMessage +=
-            "Digite de 1 à 3 para qualificar nosso atendimento:\n*1* - _Insatisfeito_\n*2* - _Satisfeito_\n*3* - _Muito Satisfeito_\n\n";
-          await SendWhatsAppMessage({ body: bodyRatingMessage, ticket });
-
-          await ticketTraking.update({
-            ratingAt: moment().toDate()
-          });
-
-          io.to(`company-${ticket.companyId}-open`)
-            .to(`queue-${ticket.queueId}-open`)
-            .to(ticketId.toString())
-            .emit(`company-${ticket.companyId}-ticket`, {
-              action: "delete",
-              ticketId: ticket.id
+      if (ticket.whatsappId != null) {
+        const { complationMessage, ratingMessage } = await ShowWhatsAppService(
+          ticket.whatsappId,
+          companyId
+        );
+  
+        if (setting?.value === "enabled") {
+          if (ticketTraking.ratingAt == null) {
+            const ratingTxt = ratingMessage || "";
+            let bodyRatingMessage = `\u200e${ratingTxt}\n\n`;
+            bodyRatingMessage +=
+              "Digite de 1 à 3 para qualificar nosso atendimento:\n*1* - _Insatisfeito_\n*2* - _Satisfeito_\n*3* - _Muito Satisfeito_\n\n";
+            await SendWhatsAppMessage({ body: bodyRatingMessage, ticket });
+  
+            await ticketTraking.update({
+              ratingAt: moment().toDate()
             });
-
-          return { ticket, oldStatus, oldUserId };
+  
+            io.to(`company-${ticket.companyId}-open`)
+              .to(`queue-${ticket.queueId}-open`)
+              .to(ticketId.toString())
+              .emit(`company-${ticket.companyId}-ticket`, {
+                action: "delete",
+                ticketId: ticket.id
+              });
+  
+            return { ticket, oldStatus, oldUserId };
+          }
+          ticketTraking.ratingAt = moment().toDate();
+          ticketTraking.rated = false;
         }
-        ticketTraking.ratingAt = moment().toDate();
-        ticketTraking.rated = false;
+  
+        await ticket.update({
+          promptId: null,
+          integrationId: null,
+          useIntegration: false,
+          typebotStatus: false,
+          typebotSessionId: null
+        })
+  
+        if (!isNil(complationMessage) && complationMessage !== "") {
+          const body = `\u200e${complationMessage}`;
+          try {
+            await SendWhatsAppMessage({ body, ticket });        
+          } catch (error) {
+            console.log("Erro ao mandar a mensagem de conclusao " + error)
+          }
+        }
+  
+  
+        ticketTraking.finishedAt = moment().toDate();
+        ticketTraking.whatsappId = ticket.whatsappId;
+        ticketTraking.userId = ticket.userId;
+  
+        /*    queueId = null;
+              userId = null; */
+      }
+  
+      if (queueId !== undefined && queueId !== null) {
+        ticketTraking.queuedAt = moment().toDate();
+      }        
       }
 
-      await ticket.update({
-        promptId: null,
-        integrationId: null,
-        useIntegration: false,
-        typebotStatus: false,
-        typebotSessionId: null
-      })
-
-      if (!isNil(complationMessage) && complationMessage !== "") {
-        const body = `\u200e${complationMessage}`;
-        try {
-          await SendWhatsAppMessage({ body, ticket });        
-        } catch (error) {
-          console.log("Erro ao mandar a mensagem de conclusao " + error)
-        }
-      }
-
-
-      ticketTraking.finishedAt = moment().toDate();
-      ticketTraking.whatsappId = ticket.whatsappId;
-      ticketTraking.userId = ticket.userId;
-
-      /*    queueId = null;
-            userId = null; */
-    }
-
-    if (queueId !== undefined && queueId !== null) {
-      ticketTraking.queuedAt = moment().toDate();
-    }
 
     const settingsTransfTicket = await ListSettingsServiceOne({ companyId: companyId, key: "sendMsgTransfTicket" });
 

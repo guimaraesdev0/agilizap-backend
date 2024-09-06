@@ -84,7 +84,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     queueIds,
     withUnreadMessages,
     companyId,
-  });
+  }); 
   console.clear()
   console.log({ tickets, count, hasMore })
   return res.status(200).json({ tickets, count, hasMore });
@@ -167,8 +167,6 @@ export const kanban = async (req: Request, res: Response): Promise<Response> => 
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { ticketId } = req.params;
   const { companyId } = req.user;
-
-
 
   const contact = await ShowTicketService(ticketId, companyId);
   return res.status(200).json(contact);
